@@ -1,0 +1,18 @@
+# Archivos de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entorno Virtual
+venv/
+.venv/
+.env
+
+# SQLite Database
+database.db
+
+# Alembic archivos innecesarios
+alembic/versions/
+
+# Logs y caché
+*.log
