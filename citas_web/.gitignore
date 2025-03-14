@@ -1,0 +1,16 @@
+# Ignorar base de datos y archivos sensibles
+*.db
+*.sqlite3
+
+# Ignorar archivos de caché
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar directorios de dependencias
+venv/
+env/
+node_modules/
+
+# Ignorar archivos estáticos generados
+staticfiles/

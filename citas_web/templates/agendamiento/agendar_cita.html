@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita</title>
+</head>
+<body>
+    <h1>Agendar Cita Médica</h1>
+    <form id="cita-form">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" required><br>
+
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha" required><br>
+
+        <button type="submit">Agendar</button>
+    </form>
+
+    <script>
+        document.getElementById("cita-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const nombre = document.getElementById("nombre").value;
+            const fecha = document.getElementById("fecha").value;
+
+            const response = await fetch("http://127.0.0.1:8000/appointments/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre, fecha })
+            });
+
+            if (response.ok) {
+                alert("Cita agendada correctamente");
+            } else {
+                alert("Error al agendar la cita");
+            }
+        });
+    </script>
+</body>
+</html>

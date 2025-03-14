@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Agendar una Cita</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <label for="doctor">Doctor:</label>
+    <select name="doctor" required>
+      {% for doctor in doctors %}
+        <option value="{{ doctor.id }}">{{ doctor.name }} - {{ doctor.specialty }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="date">Fecha y Hora:</label>
+    <input type="datetime-local" name="date" required>
+
+    <button type="submit">Agendar Cita</button>
+  </form>
+{% endblock %}

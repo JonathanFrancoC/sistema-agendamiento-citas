@@ -1,0 +1,11 @@
+{% extends "agendamiento/base.html" %}
+
+{% block title %}Inicio - Agendamiento{% endblock %}
+
+{% block content %}
+    <div class="container-custom mx-auto p-4 bg-white shadow rounded text-center">
+        <h2 class="mb-4">Bienvenido al Sistema de Agendamiento de Citas</h2>
+        <a href="{% url 'register' %}" class="btn btn-primary">Registrarse</a>
+        <a href="{% url 'login' %}" class="btn btn-secondary">Iniciar Sesión</a>
+    </div>
+{% endblock %}

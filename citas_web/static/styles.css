@@ -1,0 +1,59 @@
+/* Cambiar fondo a azul marino */
+body {
+    background-color: #063a6e; /* Azul marino */
+    color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    flex-direction: column;
+}
+
+/* Contenedor del formulario */
+.container-custom {
+    background-color: white;
+    color: black;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    top: -300px; /* Lo sube más arriba */
+}
+
+/* Inputs */
+.form-control {
+    border-radius: 5px;
+}
+
+/* Botón */
+.btn-success {
+    background-color: #2ecc71;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+}
+
+h1 {
+    font-size: 5rem;
+    margin-top: 400px;
+    text-align: center;
+    color: white;
+}
+
+/*login */
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+body {
+    background-color: #0D2B45;
+}

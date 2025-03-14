@@ -1,0 +1,44 @@
+{% extends 'agendamiento/base.html' %}
+
+{% block title %}Registro de Usuario{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow-lg" style="max-width: 400px; width: 100%; border-radius: 10px;">
+        <h2 class="text-center mb-4">Registro de Usuario</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3 input-group">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                <input type="text" name="username" class="form-control" placeholder="Nombre de usuario" required>
+            </div>
+            
+            <div class="mb-3 input-group">
+                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                <input type="email" name="email" class="form-control" placeholder="Correo electrónico" required>
+            </div>
+
+            <div class="mb-3 input-group">
+                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                <input type="password" name="password1" class="form-control" placeholder="Contraseña" required>
+            </div>
+
+            <div class="mb-3 input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" name="password2" class="form-control" placeholder="Confirmar contraseña" required>
+            </div>
+
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="terms">
+                <label class="form-check-label" for="terms">Acepto los <a href="#">términos y condiciones</a></label>
+            </div>
+            
+            <button type="submit" class="btn btn-success w-100">Registrarse</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="{% url 'login' %}" class="text-decoration-none">¿Ya tienes cuenta? Inicia sesión</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
