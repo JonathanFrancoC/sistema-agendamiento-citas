@@ -1,0 +1,104 @@
+{% extends "agendamiento/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Citas Disponibles</h2>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'agendamiento:agendar_cita' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Agendar Nueva Cita
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if citas_por_especialidad %}
+        <div class="row">
+            {% for especialidad_grupo in citas_por_especialidad %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            {{ especialidad_grupo.especialidad }}
+                            <span class="badge bg-light text-primary float-end">
+                                {{ especialidad_grupo.total_doctores }} doctor{{ especialidad_grupo.total_doctores|pluralize:"es" }}
+                            </span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for doctor in especialidad_grupo.doctores %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ doctor.user.get_full_name }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ doctor.hora_inicio|time:"H:i" }} - {{ doctor.hora_fin|time:"H:i" }}
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'agendamiento:agendar_cita' %}?doctor={{ doctor.id }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-calendar-plus me-1"></i>
+                                        Agendar
+                                    </a>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        Días de atención: 
+                                        {% with dias_trabajo=doctor.get_dias_trabajo %}
+                                            {% for dia in dias_trabajo %}
+                                                {% if dia == 0 %}Lunes
+                                                {% elif dia == 1 %}Martes
+                                                {% elif dia == 2 %}Miércoles
+                                                {% elif dia == 3 %}Jueves
+                                                {% elif dia == 4 %}Viernes
+                                                {% elif dia == 5 %}Sábado
+                                                {% elif dia == 6 %}Domingo
+                                                {% endif %}
+                                                {% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No hay citas disponibles en este momento.
+        </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

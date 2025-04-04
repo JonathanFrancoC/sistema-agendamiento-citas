@@ -1,0 +1,171 @@
+{% extends 'citas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Panel de Administración</h1>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Doctores</h5>
+                    <h2 class="card-text">{{ total_doctores }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Pacientes</h5>
+                    <h2 class="card-text">{{ total_pacientes }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Hoy</h5>
+                    <h2 class="card-text">{{ citas_hoy }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Pendientes</h5>
+                    <h2 class="card-text">{{ citas_pendientes }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:citas_doctor_add' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-user-md"></i> Agregar Doctor
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:citas_paciente_add' %}" class="btn btn-success btn-block">
+                                <i class="fas fa-user"></i> Agregar Paciente
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:citas_cita_add' %}" class="btn btn-info btn-block">
+                                <i class="fas fa-calendar-plus"></i> Crear Cita
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:citas_horariodoctor_add' %}" class="btn btn-warning btn-block">
+                                <i class="fas fa-clock"></i> Gestionar Horarios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimas Citas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Últimas Citas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Paciente</th>
+                                    <th>Doctor</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cita in ultimas_citas %}
+                                <tr>
+                                    <td>{{ cita.fecha|date:"d/m/Y" }} {{ cita.hora }}</td>
+                                    <td>{{ cita.paciente.user.get_full_name }}</td>
+                                    <td>{{ cita.doctor.user.get_full_name }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ cita.estado_color }}">
+                                            {{ cita.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin:citas_cita_change' cita.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctores Activos -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Doctores Activos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Especialidad</th>
+                                    <th>Teléfono</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doctor in doctores_activos %}
+                                <tr>
+                                    <td>{{ doctor.user.get_full_name }}</td>
+                                    <td>{{ doctor.especialidad }}</td>
+                                    <td>{{ doctor.telefono }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ doctor.activo|yesno:'success,danger' }}">
+                                            {{ doctor.activo|yesno:'Activo,Inactivo' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin:citas_doctor_change' doctor.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,63 @@
+{% extends 'agendamiento/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4">Bienvenido al Sistema de Agendamiento de Citas</h1>
+        <p class="lead">Gestiona tus citas médicas de manera fácil y eficiente.</p>
+        <hr class="my-4">
+        <p>Selecciona una de las siguientes opciones:</p>
+    </div>
+
+    <div class="row">
+        {% if user.is_authenticated %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Mis Citas</h5>
+                        <p class="card-text">Ver y gestionar tus citas programadas.</p>
+                        <a href="{% url 'citas_disponibles' %}" class="btn btn-primary">Ver Citas</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Agendar Cita</h5>
+                        <p class="card-text">Programa una nueva cita médica.</p>
+                        <a href="{% url 'agendar_cita' %}" class="btn btn-success">Agendar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Mi Perfil</h5>
+                        <p class="card-text">Gestiona tu información personal.</p>
+                        <a href="#" class="btn btn-info">Ver Perfil</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Iniciar Sesión</h5>
+                        <p class="card-text">Accede a tu cuenta para gestionar tus citas.</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary">Iniciar Sesión</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Registrarse</h5>
+                        <p class="card-text">Crea una cuenta nueva para agendar citas.</p>
+                        <a href="{% url 'register' %}" class="btn btn-success">Registrarse</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

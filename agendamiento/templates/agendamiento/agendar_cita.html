@@ -1,0 +1,545 @@
+{% extends "agendamiento/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+<style>
+    .especialidades-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .especialidad-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .especialidad-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-color: #007bff;
+    }
+
+    .especialidad-card.active {
+        border-color: #007bff;
+        background-color: #f8f9ff;
+    }
+
+    .especialidad-icon {
+        font-size: 2.5rem;
+        color: #007bff;
+        margin-bottom: 1rem;
+    }
+
+    .especialidad-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .doctores-lista {
+        display: none;
+    }
+
+    .doctores-lista.active {
+        display: block !important;
+    }
+
+    .doctor-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .doctor-card:hover {
+        transform: translateX(5px);
+        border-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .doctor-card.active {
+        border-color: #007bff;
+        background-color: #f8f9ff;
+    }
+
+    .doctor-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .doctor-avatar {
+        width: 60px;
+        height: 60px;
+        background: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+
+    .doctor-avatar i {
+        font-size: 1.5rem;
+        color: #6c757d;
+    }
+
+    .doctor-details h5 {
+        margin-bottom: 0.25rem;
+    }
+
+    .doctor-details p {
+        margin-bottom: 0.25rem;
+        color: #6c757d;
+    }
+
+    .horarios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .horario-card {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .horario-card:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .horario-card.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #0056b3;
+    }
+
+    .horario-card.disponible {
+        cursor: pointer;
+        background-color: #e7f5ff;
+        border-color: #a8d5ff;
+    }
+
+    .horario-card.disponible:hover {
+        background-color: #d0ebff;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .horario-card.no-disponible {
+        opacity: 0.7;
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        cursor: not-allowed;
+    }
+
+    .horario-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .horario-info i {
+        font-size: 1.2rem;
+    }
+
+    .horario-tiempo {
+        font-weight: 500;
+    }
+
+    .text-muted {
+        font-size: 0.8rem;
+    }
+
+    .form-section {
+        display: none;
+    }
+
+    .form-section.active {
+        display: block !important;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        margin: 0 1rem;
+        color: #6c757d;
+    }
+
+    .step.active {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem;
+    }
+
+    .step.active .step-number {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .step-text {
+        display: block;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .step.active .step-text {
+        color: #007bff;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Agendar Cita{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-calendar-plus text-primary me-2"></i>
+        Agendar Nueva Cita
+    </h2>
+    <p class="text-center text-muted mb-5">Completa el formulario para agendar tu cita médica</p>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Pasos del proceso -->
+            <div class="steps mb-5">
+                <div class="d-flex justify-content-center">
+                    <div class="step active me-4" id="step1">
+                        <span class="step-number">1</span>
+                        <span class="step-text">Seleccionar Especialidad</span>
+                    </div>
+                    <div class="step me-4" id="step2">
+                        <span class="step-number">2</span>
+                        <span class="step-text">Elegir Doctor</span>
+                    </div>
+                    <div class="step" id="step3">
+                        <span class="step-number">3</span>
+                        <span class="step-text">Programar Cita</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" id="formCita" class="needs-validation" action="{% url 'agendamiento:agendar_cita' %}" novalidate>
+                {% csrf_token %}
+                
+                <!-- Paso 1: Selección de Especialidad -->
+                <div class="form-section active" id="especialidadSection">
+                    <div class="especialidades-grid">
+                        {% regroup doctores by especialidad as doctores_por_especialidad %}
+                        {% for grupo in doctores_por_especialidad %}
+                        <div class="especialidad-card" data-especialidad="{{ grupo.grouper|slugify }}">
+                            <i class="fas {% if grupo.grouper == 'Cardiología' %}fa-heart
+                                      {% elif grupo.grouper == 'Pediatría' %}fa-baby
+                                      {% elif grupo.grouper == 'Dermatología' %}fa-allergies
+                                      {% else %}fa-user-md{% endif %} especialidad-icon"></i>
+                            <h3 class="especialidad-name">{{ grupo.grouper }}</h3>
+                            <p class="text-muted mb-0">{{ grupo.list|length }} doctor{{ grupo.list|length|pluralize:"es" }}</p>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No hay especialidades disponibles en este momento.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Paso 2: Selección de Doctor -->
+                <div class="form-section" id="doctorSection">
+                    <div class="mb-3">
+                        <a href="#" class="btn btn-link ps-0" id="volverEspecialidades">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a Especialidades
+                        </a>
+                    </div>
+                    {% regroup doctores by especialidad as doctores_por_especialidad %}
+                    {% for grupo in doctores_por_especialidad %}
+                    <div class="doctores-lista" id="doctores-{{ grupo.grouper|slugify }}" style="display: none;">
+                        <h4 class="mb-4">Doctores de {{ grupo.grouper }}</h4>
+                        {% for doctor in grupo.list %}
+                        <div class="doctor-card" data-doctor-id="{{ doctor.id }}">
+                            <div class="doctor-info">
+                                <div class="doctor-avatar">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <div class="doctor-details">
+                                    <h5>{{ doctor.user.get_full_name }}</h5>
+                                    <p>{{ grupo.grouper }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ doctor.hora_inicio|time:"H:i" }} - {{ doctor.hora_fin|time:"H:i" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No hay doctores disponibles para esta especialidad.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <input type="hidden" name="doctor" id="doctorInput" required>
+                </div>
+
+                <!-- Paso 3: Detalles de la Cita -->
+                <div class="form-section" id="citaSection">
+                    <div class="mb-3">
+                        <a href="#" class="btn btn-link ps-0" id="volverDoctores">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a Doctores
+                        </a>
+                    </div>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <label for="fecha" class="form-label">Fecha</label>
+                                <div class="input-group">
+                                    <input type="text" name="fecha" id="fecha" class="form-control" 
+                                           placeholder="Selecciona una fecha" required>
+                                    <span class="input-group-text">
+                                        <i class="fas fa-calendar"></i>
+                                    </span>
+                                </div>
+                                <input type="hidden" name="hora" id="hora" required>
+                            </div>
+
+                            <!-- Horarios Grid -->
+                            <div class="horarios-grid mt-4" id="horariosDisponibles">
+                                <!-- Los horarios se cargarán dinámicamente aquí -->
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="notas" class="form-label">Notas o Síntomas (Opcional)</label>
+                                <textarea name="notas" id="notas" class="form-control" rows="3" 
+                                          placeholder="Describe brevemente tus síntomas o el motivo de la consulta"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary" id="btnConfirmar" disabled>
+                            <i class="fas fa-check me-2"></i>Confirmar Cita
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación del formulario antes de enviar
+    document.getElementById('formCita').addEventListener('submit', function(e) {
+        const doctor = document.getElementById('doctorInput').value;
+        const fecha = document.getElementById('fecha').value;
+        const hora = document.getElementById('hora').value;
+
+        if (!doctor || !fecha || !hora) {
+            e.preventDefault();
+            alert('Por favor complete todos los campos requeridos');
+            return false;
+        }
+    });
+
+    // Mostrar solo la sección de especialidades al inicio
+    document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+    document.getElementById('especialidadSection').classList.add('active');
+    
+    // Manejo de selección de especialidad
+    document.querySelectorAll('.especialidad-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const especialidad = this.dataset.especialidad;
+            
+            // Actualizar estado visual
+            document.querySelectorAll('.especialidad-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Cambiar a la sección de doctores
+            document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+            document.getElementById('doctorSection').classList.add('active');
+            
+            // Mostrar los doctores de la especialidad seleccionada
+            document.querySelectorAll('.doctores-lista').forEach(lista => lista.style.display = 'none');
+            document.getElementById(`doctores-${especialidad}`).style.display = 'block';
+            
+            // Actualizar indicador de pasos
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById('step2').classList.add('active');
+        });
+    });
+    
+    // Manejo de selección de doctor
+    document.querySelectorAll('.doctor-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const doctorId = this.dataset.doctorId;
+            
+            document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('doctorInput').value = doctorId;
+            
+            // Cambiar a la sección de cita
+            document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+            document.getElementById('citaSection').classList.add('active');
+            
+            // Actualizar indicador de pasos
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById('step3').classList.add('active');
+        });
+    });
+    
+    // Volver a especialidades
+    document.getElementById('volverEspecialidades').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+        document.getElementById('especialidadSection').classList.add('active');
+        document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+        document.getElementById('step1').classList.add('active');
+    });
+    
+    // Volver a doctores
+    document.getElementById('volverDoctores').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+        document.getElementById('doctorSection').classList.add('active');
+        document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+        document.getElementById('step2').classList.add('active');
+    });
+
+    // Configuración de Flatpickr
+    const fp = flatpickr("#fecha", {
+        locale: "es",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: "true",
+        theme: "material_blue",
+        onChange: function(selectedDates, dateStr, instance) {
+            const doctorId = document.getElementById('doctorInput').value;
+            if (doctorId && dateStr) {
+                cargarHorarios(doctorId, dateStr);
+            }
+        }
+    });
+
+    function cargarHorarios(doctorId, fecha) {
+        const horariosContainer = document.getElementById('horariosDisponibles');
+        
+        // Mostrar indicador de carga
+        horariosContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando horarios disponibles...</p>
+            </div>
+        `;
+
+        // Hacer la petición para obtener los horarios
+        fetch(`/agendamiento/get_horarios_disponibles/?doctor_id=${doctorId}&fecha=${fecha}`)
+            .then(response => response.json())
+            .then(data => {
+                horariosContainer.innerHTML = '';
+                
+                if (data.horarios && data.horarios.length > 0) {
+                    data.horarios.forEach(horario => {
+                        const horarioCard = document.createElement('div');
+                        horarioCard.className = `horario-card ${horario.disponible ? 'disponible' : 'no-disponible'}`;
+                        if (horario.disponible) {
+                            horarioCard.setAttribute('data-horario', horario.hora);
+                        }
+                        
+                        horarioCard.innerHTML = `
+                            <div class="horario-info">
+                                <i class="fas fa-clock"></i>
+                                <span class="horario-tiempo">${horario.hora}</span>
+                                ${!horario.disponible ? '<small class="text-muted">Ocupado</small>' : ''}
+                            </div>
+                        `;
+                        
+                        if (horario.disponible) {
+                            horarioCard.addEventListener('click', function() {
+                                document.querySelectorAll('.horario-card').forEach(card => {
+                                    card.classList.remove('active');
+                                });
+                                this.classList.add('active');
+                                document.getElementById('hora').value = horario.hora;
+                                document.getElementById('btnConfirmar').disabled = false;
+                            });
+                        }
+                        
+                        horariosContainer.appendChild(horarioCard);
+                    });
+                } else {
+                    horariosContainer.innerHTML = `
+                        <div class="alert alert-info w-100">
+                            <i class="fas fa-info-circle me-2"></i>
+                            ${data.mensaje || 'No hay horarios disponibles para esta fecha'}
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                horariosContainer.innerHTML = `
+                    <div class="alert alert-danger w-100">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Error al cargar los horarios: ${error.message}
+                    </div>
+                `;
+            });
+    }
+
+    // Deshabilitar botón de confirmar hasta que se seleccione un horario
+    document.getElementById('btnConfirmar').disabled = true;
+});
+</script>
+{% endblock extra_js %}

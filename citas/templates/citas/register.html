@@ -1,0 +1,263 @@
+{% extends 'citas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Registro de Usuario</h2>
+                    
+                    {% if errors.general %}
+                    <div class="alert alert-danger mb-4">
+                        {{ errors.general }}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">Nombre de Usuario *</label>
+                                <input type="text" 
+                                       class="form-control {% if errors.username %}is-invalid{% endif %}" 
+                                       id="username" 
+                                       name="username" 
+                                       value="{{ data.username }}"
+                                       required>
+                                {% if errors.username %}
+                                <div class="invalid-feedback">
+                                    {{ errors.username }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Correo Electrónico *</label>
+                                <input type="email" 
+                                       class="form-control {% if errors.email %}is-invalid{% endif %}" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ data.email }}"
+                                       required>
+                                {% if errors.email %}
+                                <div class="invalid-feedback">
+                                    {{ errors.email }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Contraseña *</label>
+                                <input type="password" 
+                                       class="form-control {% if errors.password %}is-invalid{% endif %}" 
+                                       id="password" 
+                                       name="password" 
+                                       required>
+                                {% if errors.password %}
+                                <div class="invalid-feedback">
+                                    {{ errors.password }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="password2" class="form-label">Confirmar Contraseña *</label>
+                                <input type="password" 
+                                       class="form-control {% if errors.password2 %}is-invalid{% endif %}" 
+                                       id="password2" 
+                                       name="password2" 
+                                       required>
+                                {% if errors.password2 %}
+                                <div class="invalid-feedback">
+                                    {{ errors.password2 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo de Usuario *</label>
+                            <select class="form-select {% if errors.tipo %}is-invalid{% endif %}" 
+                                    id="tipo" 
+                                    name="tipo" 
+                                    required 
+                                    onchange="mostrarCamposAdicionales()">
+                                <option value="">Selecciona un tipo...</option>
+                                <option value="doctor" {% if data.tipo == 'doctor' %}selected{% endif %}>Doctor</option>
+                                <option value="paciente" {% if data.tipo == 'paciente' %}selected{% endif %}>Paciente</option>
+                            </select>
+                            {% if errors.tipo %}
+                            <div class="invalid-feedback">
+                                {{ errors.tipo }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="campos_comunes" class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono *</label>
+                            <input type="tel" 
+                                   class="form-control {% if errors.telefono %}is-invalid{% endif %}" 
+                                   id="telefono" 
+                                   name="telefono" 
+                                   value="{{ data.telefono }}"
+                                   required>
+                            {% if errors.telefono %}
+                            <div class="invalid-feedback">
+                                {{ errors.telefono }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Campos específicos para doctores -->
+                        <div id="campos_doctor" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                Nota: Las cuentas de doctores requieren verificación por parte del administrador antes de poder atender pacientes.
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="especialidad" class="form-label">Especialidad Médica *</label>
+                                <input type="text" 
+                                       class="form-control {% if errors.especialidad %}is-invalid{% endif %}" 
+                                       id="especialidad" 
+                                       name="especialidad"
+                                       value="{{ data.especialidad }}">
+                                {% if errors.especialidad %}
+                                <div class="invalid-feedback">
+                                    {{ errors.especialidad }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="numero_licencia" class="form-label">Número de Licencia Médica *</label>
+                                <input type="text" 
+                                       class="form-control {% if errors.numero_licencia %}is-invalid{% endif %}" 
+                                       id="numero_licencia" 
+                                       name="numero_licencia"
+                                       value="{{ data.numero_licencia }}">
+                                {% if errors.numero_licencia %}
+                                <div class="invalid-feedback">
+                                    {{ errors.numero_licencia }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="documento_licencia" class="form-label">Documento de Licencia Médica (PDF) *</label>
+                                <input type="file" 
+                                       class="form-control {% if errors.documento_licencia %}is-invalid{% endif %}" 
+                                       id="documento_licencia" 
+                                       name="documento_licencia" 
+                                       accept=".pdf">
+                                {% if errors.documento_licencia %}
+                                <div class="invalid-feedback">
+                                    {{ errors.documento_licencia }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="certificaciones" class="form-label">Certificaciones Adicionales (PDF, opcional)</label>
+                                <input type="file" class="form-control" id="certificaciones" name="certificaciones" accept=".pdf" multiple>
+                                <div class="form-text">Puedes seleccionar múltiples archivos PDF.</div>
+                            </div>
+                        </div>
+
+                        <!-- Campos específicos para pacientes -->
+                        <div id="campos_paciente" style="display: none;">
+                            <div class="mb-3">
+                                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
+                                <input type="date" 
+                                       class="form-control {% if errors.fecha_nacimiento %}is-invalid{% endif %}" 
+                                       id="fecha_nacimiento" 
+                                       name="fecha_nacimiento"
+                                       value="{{ data.fecha_nacimiento }}">
+                                {% if errors.fecha_nacimiento %}
+                                <div class="invalid-feedback">
+                                    {{ errors.fecha_nacimiento }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Registrarse
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="text-decoration-none">Inicia sesión aquí</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function mostrarCamposAdicionales() {
+    const tipo = document.getElementById('tipo').value;
+    const camposDoctor = document.getElementById('campos_doctor');
+    const camposPaciente = document.getElementById('campos_paciente');
+    
+    // Ocultar todos los campos específicos
+    camposDoctor.style.display = 'none';
+    if (camposPaciente) camposPaciente.style.display = 'none';
+    
+    // Mostrar campos según el tipo seleccionado
+    if (tipo === 'doctor') {
+        camposDoctor.style.display = 'block';
+        // Hacer campos de doctor requeridos
+        document.getElementById('especialidad').required = true;
+        document.getElementById('numero_licencia').required = true;
+        document.getElementById('documento_licencia').required = true;
+    } else if (tipo === 'paciente' && camposPaciente) {
+        camposPaciente.style.display = 'block';
+        // Hacer campos de doctor no requeridos
+        document.getElementById('especialidad').required = false;
+        document.getElementById('numero_licencia').required = false;
+        document.getElementById('documento_licencia').required = false;
+    }
+}
+
+// Mostrar los campos adicionales si hay un tipo seleccionado
+document.addEventListener('DOMContentLoaded', function() {
+    mostrarCamposAdicionales();
+});
+
+// Validación del formulario
+(function () {
+    'use strict'
+    const forms = document.querySelectorAll('.needs-validation')
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            
+            // Validación adicional para contraseñas
+            const password = document.getElementById('password')
+            const password2 = document.getElementById('password2')
+            if (password.value !== password2.value) {
+                password2.setCustomValidity('Las contraseñas no coinciden')
+                event.preventDefault()
+                event.stopPropagation()
+            } else {
+                password2.setCustomValidity('')
+            }
+            
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 

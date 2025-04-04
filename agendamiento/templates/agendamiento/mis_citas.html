@@ -1,0 +1,216 @@
+{% extends 'agendamiento/base.html' %}
+
+{% block title %}Mis Citas{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-0">
+                                {% if es_doctor %}
+                                Agenda de Consultas
+                                {% else %}
+                                Mis Citas
+                                {% endif %}
+                            </h2>
+                            {% if es_doctor %}
+                            <p class="text-muted mb-0">Dr. {{ doctor.user.get_full_name }} - {{ doctor.especialidad }}</p>
+                            {% endif %}
+                        </div>
+                        {% if not es_doctor %}
+                        <a href="{% url 'agendamiento:agendar_cita' %}" class="btn btn-primary">
+                            Agendar Nueva Cita
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if citas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% if es_doctor %}
+                                    <th>Paciente</th>
+                                    {% else %}
+                                    <th>Doctor</th>
+                                    <th>Especialidad</th>
+                                    {% endif %}
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Estado</th>
+                                    <th>Notas</th>
+                                    {% if es_doctor %}
+                                    <th>Acciones</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cita in citas %}
+                                <tr>
+                                    {% if es_doctor %}
+                                    <td>{{ cita.paciente.user.get_full_name }}</td>
+                                    {% else %}
+                                    <td>{{ cita.doctor.user.get_full_name }}</td>
+                                    <td>{{ cita.doctor.especialidad }}</td>
+                                    {% endif %}
+                                    <td>{{ cita.fecha|date:"d/m/Y" }}</td>
+                                    <td>{{ cita.fecha|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="badge {% if cita.estado == 'pendiente' %}bg-warning
+                                                          {% elif cita.estado == 'confirmada' %}bg-success
+                                                          {% elif cita.estado == 'cancelada' %}bg-danger
+                                                          {% elif cita.estado == 'expirada' %}bg-secondary
+                                                          {% endif %}">
+                                            {{ cita.estado|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if cita.notas %}
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                title="{{ cita.notas }}">
+                                            Ver notas
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted">Sin notas</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if es_doctor %}
+                                    <td>
+                                        <div class="btn-group">
+                                            {% if cita.estado == 'pendiente' %}
+                                            <button class="btn btn-sm btn-success" onclick="confirmarCita({{ cita.id }})">
+                                                <i class="fas fa-check"></i> Confirmar
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="cancelarCita({{ cita.id }})">
+                                                <i class="fas fa-times"></i> Cancelar
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        {% if es_doctor %}
+                        <h4>No tienes consultas agendadas</h4>
+                        <p class="text-muted">Tu agenda está vacía por el momento</p>
+                        {% else %}
+                        <h4>No tienes citas agendadas</h4>
+                        <p class="text-muted">Agenda tu primera cita médica ahora</p>
+                        <a href="{% url 'agendamiento:agendar_cita' %}" class="btn btn-primary mt-3">
+                            Agendar Cita
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if es_doctor %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+
+function confirmarCita(citaId) {
+    if (confirm('¿Deseas confirmar esta cita?')) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/agendamiento/confirmar-cita/${citaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error en la respuesta del servidor');
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Error al confirmar la cita: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al confirmar la cita. Por favor intente nuevamente.');
+        });
+    }
+}
+
+function cancelarCita(citaId) {
+    if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/agendamiento/cancelar-cita/${citaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error en la respuesta del servidor');
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Error al cancelar la cita: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cancelar la cita. Por favor intente nuevamente.');
+        });
+    }
+}
+</script>
+{% else %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+</script>
+{% endif %}
+{% endblock %} 

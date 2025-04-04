@@ -1,0 +1,328 @@
+{% extends 'agendamiento/base.html' %}
+
+{% block title %}Panel del Doctor{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Información del Doctor -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-md fa-3x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h2 class="mb-1">Dr. {{ request.user.get_full_name }}</h2>
+                            <p class="text-muted mb-0">{{ request.user.doctor.especialidad }}</p>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-phone-alt me-2"></i>{{ request.user.doctor.telefono }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            {% if not request.user.doctor.verificado %}
+                            <span class="badge bg-warning">Pendiente de Verificación</span>
+                            {% elif not request.user.doctor.activo %}
+                            <span class="badge bg-danger">Inactivo</span>
+                            {% else %}
+                            <span class="badge bg-success">Activo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Citas Hoy</h6>
+                            <h2 class="mb-0">{{ citas_hoy_count|default:0 }}</h2>
+                        </div>
+                        <i class="fas fa-calendar-day fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Citas Pendientes</h6>
+                            <h2 class="mb-0">{{ citas_pendientes_count|default:0 }}</h2>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Total Pacientes</h6>
+                            <h2 class="mb-0">{{ total_pacientes|default:0 }}</h2>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Próxima Cita</h6>
+                            <p class="mb-0">{{ proxima_cita_hora|default:"Sin citas" }}</p>
+                        </div>
+                        <i class="fas fa-hourglass-half fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Citas de Hoy -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Citas de Hoy</h5>
+                </div>
+                <div class="card-body">
+                    {% if citas_hoy %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Paciente</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cita in citas_hoy %}
+                                <tr>
+                                    <td>{{ cita.fecha|time:"H:i" }}</td>
+                                    <td>{{ cita.paciente.user.get_full_name }}</td>
+                                    <td>
+                                        <span class="badge {% if cita.estado == 'pendiente' %}bg-warning
+                                                          {% elif cita.estado == 'confirmada' %}bg-success
+                                                          {% elif cita.estado == 'cancelada' %}bg-danger
+                                                          {% elif cita.estado == 'completada' %}bg-info
+                                                          {% endif %}">
+                                            {{ cita.estado|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#citaModal{{ cita.id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if cita.estado == 'pendiente' %}
+                                            <button type="button" class="btn btn-sm btn-outline-success"
+                                                    onclick="cambiarEstadoCita({{ cita.id }}, 'completada')">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    onclick="cambiarEstadoCita({{ cita.id }}, 'cancelada')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                        <h5>No hay citas programadas para hoy</h5>
+                        <p class="text-muted">Tu agenda está libre por el momento</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horario de Trabajo -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Mi Horario</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Días de Atención:</strong>
+                        <p class="mb-2">
+                            {% with dias_trabajo=request.user.doctor.get_dias_laborables %}
+                                {% for dia in dias_trabajo %}
+                                    {% if dia == 0 %}Lunes
+                                    {% elif dia == 1 %}Martes
+                                    {% elif dia == 2 %}Miércoles
+                                    {% elif dia == 3 %}Jueves
+                                    {% elif dia == 4 %}Viernes
+                                    {% elif dia == 5 %}Sábado
+                                    {% elif dia == 6 %}Domingo
+                                    {% endif %}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </p>
+                    </div>
+                    <div>
+                        <strong>Horario:</strong>
+                        <p class="mb-0">
+                            {{ request.user.doctor.hora_inicio|time:"H:i" }} - 
+                            {{ request.user.doctor.hora_fin|time:"H:i" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Próximas Citas</h5>
+                </div>
+                <div class="card-body">
+                    {% if proximas_citas %}
+                    <div class="list-group list-group-flush">
+                        {% for cita in proximas_citas %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ cita.paciente.user.get_full_name }}</h6>
+                                <small class="text-muted">{{ cita.fecha|date:"d/m/Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ cita.fecha|time:"H:i" }}</p>
+                            <small class="text-muted">
+                                {% if cita.notas %}
+                                <i class="fas fa-sticky-note me-1"></i>{{ cita.notas }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">No hay citas próximas programadas</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales para detalles de citas -->
+{% for cita in citas_hoy %}
+<div class="modal fade" id="citaModal{{ cita.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Cita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Paciente:</strong>
+                    <p>{{ cita.paciente.user.get_full_name }}</p>
+                </div>
+                <div class="mb-3">
+                    <strong>Fecha y Hora:</strong>
+                    <p>{{ cita.fecha|date:"d/m/Y" }} a las {{ cita.fecha|time:"H:i" }}</p>
+                </div>
+                <div class="mb-3">
+                    <strong>Estado:</strong>
+                    <p>
+                        <span class="badge {% if cita.estado == 'pendiente' %}bg-warning
+                                          {% elif cita.estado == 'confirmada' %}bg-success
+                                          {% elif cita.estado == 'cancelada' %}bg-danger
+                                          {% elif cita.estado == 'completada' %}bg-info
+                                          {% endif %}">
+                            {{ cita.estado|title }}
+                        </span>
+                    </p>
+                </div>
+                {% if cita.notas %}
+                <div class="mb-3">
+                    <strong>Notas:</strong>
+                    <p>{{ cita.notas }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                {% if cita.estado == 'pendiente' %}
+                <button type="button" class="btn btn-success" onclick="cambiarEstadoCita({{ cita.id }}, 'completada')">
+                    Marcar como Completada
+                </button>
+                <button type="button" class="btn btn-danger" onclick="cambiarEstadoCita({{ cita.id }}, 'cancelada')">
+                    Cancelar Cita
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function cambiarEstadoCita(citaId, nuevoEstado) {
+    if (confirm('¿Estás seguro de que deseas cambiar el estado de esta cita?')) {
+        fetch(`/agendamiento/cambiar-estado-cita/${citaId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                estado: nuevoEstado
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al cambiar el estado de la cita');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar el estado de la cita');
+        });
+    }
+}
+</script>
+{% endblock %} 

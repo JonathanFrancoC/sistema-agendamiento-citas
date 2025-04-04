@@ -1,0 +1,340 @@
+{% extends "agendamiento/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-plus fa-3x text-primary"></i>
+                    <h2 class="mt-3">Registro de Usuario</h2>
+                    <p class="text-muted">Crea tu cuenta para comenzar</p>
+                </div>
+
+                <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">
+                                <i class="fas fa-user me-2"></i>Nombres
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   required 
+                                   placeholder="Ingresa tus nombres">
+                            <div class="invalid-feedback">
+                                Por favor ingresa tus nombres.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">
+                                <i class="fas fa-user me-2"></i>Apellidos
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   required 
+                                   placeholder="Ingresa tus apellidos">
+                            <div class="invalid-feedback">
+                                Por favor ingresa tus apellidos.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user-circle me-2"></i>Nombre de Usuario
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   required 
+                                   placeholder="Elige un nombre de usuario">
+                            <div class="invalid-feedback">
+                                Por favor elige un nombre de usuario.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Correo Electrónico
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   required 
+                                   placeholder="tu@email.com">
+                            <div class="invalid-feedback">
+                                Por favor ingresa un correo electrónico válido.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Contraseña
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   required 
+                                   placeholder="Crea una contraseña">
+                            <div class="invalid-feedback">
+                                Por favor ingresa una contraseña.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="password2" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirmar Contraseña
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password2" 
+                                   name="password2" 
+                                   required 
+                                   placeholder="Confirma tu contraseña">
+                            <div class="invalid-feedback">
+                                Las contraseñas no coinciden.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo" class="form-label">
+                                <i class="fas fa-user-tag me-2"></i>Tipo de Usuario
+                            </label>
+                            <select class="form-select" id="tipo" name="tipo" required onchange="mostrarCamposAdicionales()">
+                                <option value="">Selecciona un tipo...</option>
+                                <option value="doctor">Doctor</option>
+                                <option value="paciente">Paciente</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor selecciona un tipo de usuario.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="campos_doctor" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Las cuentas de doctores requieren verificación por parte del administrador antes de poder atender pacientes.
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="especialidad" class="form-label">
+                                <i class="fas fa-stethoscope me-2"></i>Especialidad
+                            </label>
+                            <select class="form-select" 
+                                   id="especialidad" 
+                                   name="especialidad" 
+                                   required>
+                                <option value="">Seleccione una especialidad...</option>
+                                {% for codigo, nombre in especialidades %}
+                                <option value="{{ codigo }}" {% if data.especialidad == codigo %}selected{% endif %}>
+                                    {{ nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione una especialidad.
+                            </div>
+                            <!-- Debug info -->
+                            {% if debug %}
+                            <div class="small text-muted mt-1">
+                                Especialidades disponibles: {{ especialidades|length }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="numero_licencia" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>Número de Licencia Médica
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="numero_licencia" 
+                                   name="numero_licencia" 
+                                   placeholder="Tu número de licencia médica">
+                            <div class="invalid-feedback">
+                                Por favor ingresa tu número de licencia médica.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="documento_licencia" class="form-label">
+                                <i class="fas fa-file-pdf me-2"></i>Documento de Licencia Médica
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="documento_licencia" 
+                                   name="documento_licencia" 
+                                   accept=".pdf">
+                            <div class="form-text">
+                                Por favor sube una copia de tu licencia médica en formato PDF.
+                            </div>
+                            <div class="invalid-feedback">
+                                Por favor sube el documento de tu licencia médica.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="certificaciones" class="form-label">
+                                <i class="fas fa-certificate me-2"></i>Certificaciones Adicionales
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="certificaciones" 
+                                   name="certificaciones" 
+                                   accept=".pdf" 
+                                   multiple>
+                            <div class="form-text">
+                                Puedes subir certificaciones adicionales en formato PDF (opcional).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="campos_paciente" style="display: none;">
+                        <div class="mb-3 paciente-field" style="display: none;">
+                            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" 
+                                   max="{{ yesterday|date:'Y-m-d' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor seleccione su fecha de nacimiento
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">
+                            <i class="fas fa-phone me-2"></i>Teléfono
+                        </label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="telefono" 
+                               name="telefono" 
+                               placeholder="Tu número de teléfono">
+                        <div class="invalid-feedback">
+                            Por favor ingresa un número de teléfono válido.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-0">¿Ya tienes una cuenta?</p>
+                    <a href="{% url 'agendamiento:login' %}" class="text-primary text-decoration-none">
+                        <i class="fas fa-sign-in-alt me-1"></i>Inicia sesión aquí
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function mostrarCamposAdicionales() {
+        const tipo = document.getElementById('tipo').value;
+        const camposDoctor = document.getElementById('campos_doctor');
+        const camposPaciente = document.getElementById('campos_paciente');
+        const camposPacienteFields = document.querySelectorAll('.paciente-field');
+        
+        console.log('Tipo seleccionado:', tipo);
+        console.log('Campos doctor:', camposDoctor);
+        console.log('Campos paciente:', camposPaciente);
+        
+        // Ocultar todos los campos específicos
+        if (camposDoctor) camposDoctor.style.display = 'none';
+        if (camposPaciente) camposPaciente.style.display = 'none';
+        if (camposPacienteFields) {
+            camposPacienteFields.forEach(field => field.style.display = 'none');
+        }
+        
+        // Mostrar campos según el tipo seleccionado
+        if (tipo === 'doctor') {
+            if (camposDoctor) {
+                camposDoctor.style.display = 'block';
+                // Hacer campos de doctor requeridos
+                const especialidad = document.getElementById('especialidad');
+                const numeroLicencia = document.getElementById('numero_licencia');
+                const documentoLicencia = document.getElementById('documento_licencia');
+                
+                if (especialidad) especialidad.required = true;
+                if (numeroLicencia) numeroLicencia.required = true;
+                if (documentoLicencia) documentoLicencia.required = true;
+            }
+            // Hacer campos de paciente no requeridos
+            const fechaNacimiento = document.getElementById('fecha_nacimiento');
+            if (fechaNacimiento) fechaNacimiento.required = false;
+        } else if (tipo === 'paciente') {
+            if (camposPaciente) {
+                camposPaciente.style.display = 'block';
+                camposPacienteFields.forEach(field => field.style.display = 'block');
+            }
+            // Hacer campos de paciente requeridos
+            const fechaNacimiento = document.getElementById('fecha_nacimiento');
+            if (fechaNacimiento) fechaNacimiento.required = true;
+            
+            // Hacer campos de doctor no requeridos
+            const especialidad = document.getElementById('especialidad');
+            const numeroLicencia = document.getElementById('numero_licencia');
+            const documentoLicencia = document.getElementById('documento_licencia');
+            
+            if (especialidad) especialidad.required = false;
+            if (numeroLicencia) numeroLicencia.required = false;
+            if (documentoLicencia) documentoLicencia.required = false;
+        }
+    }
+
+    // Validación de formulario
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Inicializar campos adicionales
+    mostrarCamposAdicionales();
+    
+    // Agregar evento change al select de tipo
+    const tipoSelect = document.getElementById('tipo');
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', mostrarCamposAdicionales);
+    }
+    
+    // Establecer la fecha máxima para el campo de fecha de nacimiento
+    const fechaNacimiento = document.getElementById('fecha_nacimiento');
+    if (fechaNacimiento) {
+        const hoy = new Date();
+        hoy.setDate(hoy.getDate() - 1); // Día anterior
+        const maxDate = hoy.toISOString().split('T')[0];
+        fechaNacimiento.setAttribute('max', maxDate);
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

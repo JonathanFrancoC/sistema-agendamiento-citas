@@ -1,0 +1,220 @@
+{% extends 'citas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Panel de Control - Dr. {{ doctor.user.get_full_name }}</h1>
+        </div>
+    </div>
+
+    <!-- Información del Doctor -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Información Personal</h5>
+                    <p><strong>Especialidad:</strong> {{ doctor.especialidad }}</p>
+                    <p><strong>Teléfono:</strong> {{ doctor.telefono }}</p>
+                    <p><strong>Duración de Citas:</strong> {{ doctor.duracion_cita }} minutos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Citas de Hoy</h5>
+                    <h2 class="text-primary">{{ citas_hoy_count }}</h2>
+                    <a href="#citas-hoy" class="btn btn-primary btn-sm">Ver Detalles</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Próximas Citas</h5>
+                    <h2 class="text-success">{{ proximas_citas_count }}</h2>
+                    <a href="#proximas-citas" class="btn btn-success btn-sm">Ver Detalles</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Citas de Hoy -->
+    <div class="row mb-4" id="citas-hoy">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Citas de Hoy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Paciente</th>
+                                    <th>Teléfono</th>
+                                    <th>Motivo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cita in citas_hoy %}
+                                <tr>
+                                    <td>{{ cita.hora }}</td>
+                                    <td>{{ cita.paciente.user.get_full_name }}</td>
+                                    <td>{{ cita.paciente.telefono }}</td>
+                                    <td>{{ cita.motivo }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ cita.estado_color }}">
+                                            {{ cita.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info btn-ver-detalles" data-cita-id="{{ cita.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success btn-actualizar-estado" data-cita-id="{{ cita.id }}" data-estado="confirmada">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger btn-actualizar-estado" data-cita-id="{{ cita.id }}" data-estado="cancelada">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No hay citas programadas para hoy</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximas Citas -->
+    <div class="row mb-4" id="proximas-citas">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Próximas Citas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Paciente</th>
+                                    <th>Teléfono</th>
+                                    <th>Motivo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cita in proximas_citas %}
+                                <tr>
+                                    <td>{{ cita.fecha|date:"d/m/Y" }}</td>
+                                    <td>{{ cita.hora }}</td>
+                                    <td>{{ cita.paciente.user.get_full_name }}</td>
+                                    <td>{{ cita.paciente.telefono }}</td>
+                                    <td>{{ cita.motivo }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ cita.estado_color }}">
+                                            {{ cita.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info btn-ver-detalles" data-cita-id="{{ cita.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success btn-actualizar-estado" data-cita-id="{{ cita.id }}" data-estado="confirmada">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger btn-actualizar-estado" data-cita-id="{{ cita.id }}" data-estado="cancelada">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No hay próximas citas programadas</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horario de Atención -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Mi Horario de Atención</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Día</th>
+                                    <th>Horario</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for horario in horarios %}
+                                <tr>
+                                    <td>{{ horario.get_dia_semana_display }}</td>
+                                    <td>{{ horario.hora_inicio }} - {{ horario.hora_fin }}</td>
+                                    <td>
+                                        <span class="badge badge-success">Activo</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No hay horarios configurados</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver detalles de la cita -->
+<div class="modal fade" id="detallesCitaModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Cita</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="detallesCitaContent">
+                <!-- El contenido se cargará dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'citas/js/citas.js' %}"></script>
+{% endblock %} 

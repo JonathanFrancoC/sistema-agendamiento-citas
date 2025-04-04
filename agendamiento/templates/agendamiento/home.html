@@ -1,0 +1,93 @@
+{% extends 'agendamiento/base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <h1 class="display-4 fw-bold mb-4">Tu salud es nuestra prioridad</h1>
+            <p class="lead mb-4">Agenda tus citas médicas de manera fácil y rápida con los mejores profesionales de la salud.</p>
+            {% if user.is_authenticated %}
+            <div class="d-grid gap-3 d-md-flex">
+                <a href="{% url 'agendamiento:agendar_cita' %}" class="btn btn-primary btn-lg">
+                    Agendar Cita
+                </a>
+                <a href="{% url 'agendamiento:mis_citas' %}" class="btn btn-outline-primary btn-lg">
+                    Ver Mis Citas
+                </a>
+            </div>
+            {% else %}
+            <div class="d-grid gap-3 d-md-flex">
+                <a href="{% url 'agendamiento:login' %}" class="btn btn-primary btn-lg">
+                    Iniciar Sesión
+                </a>
+                <a href="{% url 'agendamiento:register' %}" class="btn btn-outline-primary btn-lg">
+                    Registrarse
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6 d-none d-md-block">
+            <img src="https://img.freepik.com/free-vector/hospital-building-concept-illustration_114360-8440.jpg?w=600&h=400&fit=crop" alt="Ilustración de hospital" class="img-fluid rounded shadow">
+        </div>
+    </div>
+
+    <div class="row g-4 py-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title h4">Agenda Online</h3>
+                    <p class="card-text">Programa tus citas médicas en cualquier momento, desde cualquier lugar.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-user-md fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title h4">Profesionales Calificados</h3>
+                    <p class="card-text">Accede a una red de médicos especialistas altamente calificados.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title h4">Horarios Flexibles</h3>
+                    <p class="card-text">Encuentra el horario que mejor se adapte a tu agenda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated and user.is_staff %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title">Panel de Administración</h3>
+                    <p class="card-text">Accede al panel de administración para gestionar usuarios, citas y más.</p>
+                    <a href="/admin/" class="btn btn-primary">
+                        Ir al Panel de Administración
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
